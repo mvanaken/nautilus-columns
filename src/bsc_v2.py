@@ -10,8 +10,8 @@
 # python-kaa-metadata
 
 # mkdir ~/.local/share/FileManager-python/extensions/
-# cp bsc-v2.py ~/.local/share/FileManager-python/extensions/
-# chmod a+x ~/.local/share/FileManager-python/extensions/bsc-v2.py
+# cp bsc_v2.py ~/.local/share/FileManager-python/extensions/
+# chmod a+x ~/.local/share/FileManager-python/extensions/bsc_v2.py
 
 # alternatively, you can be able to place the script in:
 # /usr/share/FileManager-python/extensions/
