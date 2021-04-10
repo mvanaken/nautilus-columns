@@ -1,13 +1,16 @@
 import bsc_v2
+import unittest
 
-from unittest import TestCase
 from parameterized import parameterized
-from fractions import Fraction
 from gi.repository import Nautilus, GObject
 from bsc_v2 import convert, RESOLUTION_UNIT
 
 
-class Test(TestCase):
+if __name__ == '__main__':
+    unittest.main()
+
+
+class Test(unittest.TestCase):
     def test_get_resolution_unit(self):
         self.assertEqual(convert(RESOLUTION_UNIT, '2'), 'Inch', 'Unexpected resolution unit.')
 
@@ -37,7 +40,7 @@ class DummyFileInfoProvider(GObject.GObject, Nautilus.FileInfo):
         return mime_type == self.mime_type
 
 
-class TestColumnExtension(TestCase):
+class TestColumnExtension(unittest.TestCase):
     EMPTY_VALUES = {k: '' for k in [d['name'] for d in bsc_v2.COLUMN_DEFINITIONS]}
 
     def setUp(self):
