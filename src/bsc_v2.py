@@ -233,6 +233,23 @@ def secToTimeFormat(secondsInFloat):
     return f'{seconds//3600:02d}:{seconds//60%60:02d}:{seconds%60:02d}'
 
 
+
+MAIN_PATTERN=re.compile('charset="Ascii" (?P<dict>.*)')
+OLD_PATTERN=re.compile('sharpness=(?P<sharpness>.*)')
+def extract_sharpness(v):
+    if v is None:
+        return ''
+    match = MAIN_PATTERN.match(v)
+    if match:
+        v = match.group('dict')
+    match = OLD_PATTERN.match(v)
+    if match:
+        return match.group('sharpness')
+    try:
+        return json.loads(v).get('sharpness', 'not set')
+    except Exception as e:
+        return ''
+
 def map_exif(file, metadata, field, tag=None, c=lambda v:v, f=lambda m,t:m.get_tag_string(t)):
     map_any(file, metadata, field, f=lambda m: f(m, tag), c=c)
 
@@ -387,6 +404,8 @@ class ColumnExtension(GObject.GObject,
             map_exif(file, metadata, 'resolution_unit', 'Exif.Image.ResolutionUnit', c=lambda v: convert(RESOLUTION_UNIT, v))
             map_exif(file, metadata, 'shutter_speed_value', 'Exif.Photo.ShutterSpeedValue')
             map_exif(file, metadata, 'title', 'Exif.Image.ImageDescription')
+            map_exif(file, metadata, 'usercomment', 'Exif.Photo.UserComment')
+            map_exif(file, metadata, 'sharpness', 'Exif.Photo.UserComment', c=extract_sharpness)
             map_exif(file, metadata, 'xresolution', 'Exif.Image.XResolution')
             map_exif(file, metadata, 'yresolution', 'Exif.Image.YResolution')
 
