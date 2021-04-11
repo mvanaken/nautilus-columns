@@ -219,6 +219,7 @@ COLUMN_DEFINITIONS = [
     { 'name' : 'bit_depth', 'label': 'Bit depth', 'description': 'Bit depth of the media file'},
     { 'name' : 'audio_format', 'label': 'Audio format', 'description': 'Format of the audio'},
     { 'name' : 'sharpness', 'label': 'Sharpness', 'description': 'Sharpness of subject in image file'},
+    { 'name' : 'rating', 'label': 'Rating', 'description': 'Rating of the Image as reported by EXIF data'},
 ]
 
 def convert(dict, value):
@@ -232,7 +233,12 @@ def secToTimeFormat(secondsInFloat):
     seconds = int(float(secondsInFloat))
     return f'{seconds//3600:02d}:{seconds//60%60:02d}:{seconds%60:02d}'
 
-
+def as_stars(v):
+    try:
+        rating = max(min(5, int(v)), 0)
+    except (TypeError, ValueError, OverflowError):
+        rating = 0
+    return ''.join([u"\u2605"] * rating + [u"\u2606"] * (5-rating))
 
 MAIN_PATTERN=re.compile('(charset="Ascii" |)(?P<comment>.*)')
 OLD_PATTERN=re.compile('sharpness=(?P<sharpness>.*)')
@@ -408,6 +414,7 @@ class ColumnExtension(GObject.GObject,
             map_exif(file, metadata, 'sharpness', 'Exif.Photo.UserComment', c=extract_sharpness)
             map_exif(file, metadata, 'xresolution', 'Exif.Image.XResolution')
             map_exif(file, metadata, 'yresolution', 'Exif.Image.YResolution')
+            map_exif(file, metadata, 'rating', 'Xmp.xmp.Rating', c=as_stars)
 
             try:
                 with Image.open(filename) as im:

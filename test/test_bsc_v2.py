@@ -1,3 +1,5 @@
+import math
+
 import bsc_v2
 import unittest
 
@@ -30,6 +32,23 @@ class Test(unittest.TestCase):
     ])
     def test_extract_sharpness(self, testname, input, expected):
         self.assertEqual(expected, bsc_v2.extract_sharpness(input))
+
+    @parameterized.expand([
+        ['Negative', -1, '☆☆☆☆☆'],
+        ['Zero', 0, '☆☆☆☆☆'],
+        ['One', 1, '★☆☆☆☆'],
+        ['Four', 4, '★★★★☆'],
+        ['Five', 5, '★★★★★'],
+        ['Six', 6, '★★★★★'],
+        ['Float', 3.5, '★★★☆☆'],
+        ['Real', math.pi, '★★★☆☆'],
+        ['Inf', math.inf, '☆☆☆☆☆'],
+        ['None', None, '☆☆☆☆☆'],
+        ['Alphanumeric', '5', '★★★★★'],
+        ['Alpha', 'a', '☆☆☆☆☆'],
+    ])
+    def test_as_stars(self, testname, input, expected):
+        self.assertEqual(expected, bsc_v2.as_stars(input))
 
 
 
@@ -65,7 +84,7 @@ class TestColumnExtension(unittest.TestCase):
         self.maxDiff = None
 
     @parameterized.expand([
-        ['image-JPG', 'resources/CanonEOS70D.jpg', 'image/jpg', {'title': 'Sample image from exiftool.js', 'artist': 'exiftool.js', 'exposure_time': '1/320', 'fnumber': '11.0', 'focal_length': '12.0', 'gps_altitude': '0.0', 'gps_latitude': '0.0', 'gps_longitude': '0.0', 'iso_speed': '100', 'orientation': '180º', 'model': 'Canon EOS 70D', 'resolution_unit': 'Inch', 'xresolution': '72/1', 'yresolution': '72/1', 'datetime_original': '2013:03:25 15:27:13', 'shutter_speed_value': '548864/65536', 'aperture_value': '458752/65536', 'exposure_bias_value': '-1/3', 'metering_mode': 'Pattern', 'flash': 'Auto mode', 'exposure_mode': 'Auto exposure', 'width': '8', 'height': '8', 'usercomment': 'charset="Ascii" sharpness=0.55', 'sharpness': '0.55'}],
+        ['image-JPG', 'resources/CanonEOS70D.jpg', 'image/jpg', {'aperture_value': '458752/65536', 'artist': 'exiftool.js', 'datetime_original': '2013:03:25 15:27:13', 'exposure_bias_value': '-1/3', 'exposure_mode': 'Auto exposure', 'exposure_time': '1/320', 'flash': 'Auto mode', 'fnumber': '11.0', 'focal_length': '12.0', 'gps_altitude': '0.0', 'gps_latitude': '0.0', 'gps_longitude': '0.0', 'iso_speed': '100', 'metering_mode': 'Pattern', 'model': 'Canon EOS 70D', 'orientation': '180º', 'resolution_unit': 'Inch', 'shutter_speed_value': '548864/65536', 'title': 'Sample image from exiftool.js', 'usercomment': 'charset="Ascii" sharpness=0.55', 'sharpness': '0.55', 'xresolution': '72/1', 'yresolution': '72/1', 'rating': '☆☆☆☆☆', 'width': '8', 'height': '8'}],
         ['audio-MP3', 'resources/gs-16b-2c-44100hz.mp3', 'audio/mpeg', {'title': 'Galway', 'artist': 'Kevin MacLeod'}],
         ['video-MP4', 'resources/gs-16b-2c-44100hz.mp4', 'video/mp4', {'duration': '00:00:15', 'format': 'MPEG-4', 'overall_bitrate': '130860', 'frame_count': '683', 'audio_format': 'AAC'}],
         ['audio-WMA', 'resources/gs-16b-2c-44100hz.wma', 'audio/x-ms-wma', {'duration': '00:00:15', 'format': 'Windows Media', 'overall_bitrate': '139387', 'bit_depth': '16', 'audio_format': 'WMA'}],
