@@ -234,21 +234,20 @@ def secToTimeFormat(secondsInFloat):
 
 
 
-MAIN_PATTERN=re.compile('charset="Ascii" (?P<dict>.*)')
+MAIN_PATTERN=re.compile('(charset="Ascii" |)(?P<comment>.*)')
 OLD_PATTERN=re.compile('sharpness=(?P<sharpness>.*)')
 def extract_sharpness(v):
-    if v is None:
-        return ''
-    match = MAIN_PATTERN.match(v)
-    if match:
-        v = match.group('dict')
-    match = OLD_PATTERN.match(v)
-    if match:
-        return match.group('sharpness')
-    try:
-        return json.loads(v).get('sharpness', 'not set')
-    except Exception as e:
-        return ''
+    if v:
+        comment = MAIN_PATTERN.match(v).group('comment')
+        match = OLD_PATTERN.match(comment)
+        if match:
+            return match.group('sharpness')
+        else:
+            try:
+                return json.loads(comment).get('sharpness', 'not set')
+            except Exception as e:
+                pass
+    return ''
 
 def map_exif(file, metadata, field, tag=None, c=lambda v:v, f=lambda m,t:m.get_tag_string(t)):
     map_any(file, metadata, field, f=lambda m: f(m, tag), c=c)
