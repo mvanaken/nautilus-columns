@@ -50,6 +50,22 @@ class Test(unittest.TestCase):
     def test_as_stars(self, testname, input, expected):
         self.assertEqual(expected, bsc_v2.as_stars(input))
 
+    @parameterized.expand([
+        ['None', None, 'Error'],
+        ['Empty', '', 'Error'],
+        ['Seconds', 10, '00:00:10'],
+        ['Minutes', 1000, '00:16:40'],
+        ['Hours', 10000, '02:46:40'],
+        ['>99 Hours', 100*60*60+100, '100:01:40'],
+        ['Alphanumeric', '12345', '03:25:45'],
+        ['Float', 3.5, '00:00:03'],
+        ['Real', math.pi, '00:00:03'],
+        ['Inf', math.inf, 'Error'],
+        ['Alpha', 'a', 'Error'],
+    ])
+    def test_sec_to_time_format(self, testname, input, expected):
+        self.assertEqual(expected, bsc_v2.sec_to_time_format(input))
+
 
 
 class DummyFileInfoProvider(GObject.GObject, Nautilus.FileInfo):

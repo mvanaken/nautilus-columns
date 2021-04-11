@@ -229,7 +229,7 @@ def convert(dict, value):
 # hh:mm:ss
 # [SabreWolfy[ to allow for correct column sorting by length
 # [MvA] moved to separate method for reusability
-def secToTimeFormat(secondsInFloat):
+def sec_to_time_format(secondsInFloat):
     seconds = int(float(secondsInFloat))
     return f'{seconds//3600:02d}:{seconds//60%60:02d}:{seconds%60:02d}'
 
@@ -373,7 +373,7 @@ class ColumnExtension(GObject.GObject,
                     mpinfo = MPEGInfo(mpfile)
                     map_any(file, mpinfo, 'bitrate', f=lambda m: m.bitrate / 1000, c=lambda v: v + ' Kbps')
                     map_any(file, mpinfo, 'samplerate', f=lambda m: m.sample_rate, c=lambda v: v + ' Hz')
-                    map_any(file, mpinfo, 'length', f=lambda m: m.length, c=secToTimeFormat)
+                    map_any(file, mpinfo, 'length', f=lambda m: m.length, c=sec_to_time_format)
                 except Exception:
                     pass
 
@@ -434,7 +434,7 @@ class ColumnExtension(GObject.GObject,
             try:
                 mediainfo = MediaInfo(filename)
                 map_mediainfo(file, mediainfo, 'format', 'Format')
-                map_mediainfo(file, mediainfo, 'duration', 'Duration', c=secToTimeFormat)
+                map_mediainfo(file, mediainfo, 'duration', 'Duration', c=sec_to_time_format)
                 map_mediainfo(file, mediainfo, 'overall_bitrate', 'OverallBitRate')
                 map_mediainfo(file, mediainfo, 'frame_count', 'FrameCount')
                 map_mediainfo(file, mediainfo, 'video_format', 'VideoFormat')
