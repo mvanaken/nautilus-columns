@@ -339,15 +339,15 @@ class ColumnExtension(GObject.GObject,
         if file.get_uri_scheme() != 'file':
             return
 
-        # Set defaults to blank, else values are showing 'unknown' instead.
-        [file.add_string_attribute(column.get('name'), '') for column in COLUMN_DEFINITIONS]
-
         # strip file:// to get absolute path
         filename = urllib.parse.unquote_plus(file.get_uri()[7:])
 
-        ################
-        # mp3 handling #
-        ################
+        self.handle_mp3(file, filename)
+        self.handle_image(file, filename)
+        self.handle_video(file, filename)
+        self.handle_pdf(file, filename)
+
+    def handle_mp3(self, file, filename):
         if file.is_mime_type('audio/mpeg'):
             # attempt to read ID3 tag
             try:
@@ -365,19 +365,18 @@ class ColumnExtension(GObject.GObject,
             with open(filename) as mpfile:
                 try:
                     mpinfo = MPEGInfo(mpfile)
-                    map_any(file, mpinfo, 'bitrate',    f=lambda m: m.bitrate / 1000, c=lambda v: v + ' Kbps')
-                    map_any(file, mpinfo, 'samplerate', f=lambda m: m.sample_rate,    c=lambda v: v + ' Hz')
-                    map_any(file, mpinfo, 'length',     f=lambda m: m.length,         c=secToTimeFormat)
+                    map_any(file, mpinfo, 'bitrate', f=lambda m: m.bitrate / 1000, c=lambda v: v + ' Kbps')
+                    map_any(file, mpinfo, 'samplerate', f=lambda m: m.sample_rate, c=lambda v: v + ' Hz')
+                    map_any(file, mpinfo, 'length', f=lambda m: m.length, c=secToTimeFormat)
                 except Exception:
                     pass
 
-        ##################
-        # image handling #
-        ##################
-        if file.get_mime_type().split('/')[0] in ('image'):
+    def handle_image(self, file, filename):
+        if file.get_mime_type().split('/')[0] in ('image') and file.get_mime_type() != "image/x-canon-cr2":
             try:
                 metadata = GExiv2.Metadata(filename)
             except Exception:
+                print("Unable to get metadata for file", filename)
                 metadata = GExiv2.Metadata()
 
             map_exif(file, metadata, 'aperture_value', 'Exif.Photo.ApertureValue')
@@ -386,21 +385,23 @@ class ColumnExtension(GObject.GObject,
             map_exif(file, metadata, 'datetime_original', 'Exif.Image.DateTime')
             map_exif(file, metadata, 'exposure_bias_value', 'Exif.Photo.ExposureBiasValue')
             map_exif(file, metadata, 'exposure_mode', 'Exif.Photo.ExposureMode', c=lambda v: convert(EXPOSURE_MODE, v))
-            map_exif(file, metadata, 'exposure_time', f=lambda m,t: m.get_exposure_time())
+            map_exif(file, metadata, 'exposure_time', f=lambda m, t: m.get_exposure_time())
             map_exif(file, metadata, 'flash', 'Exif.Photo.Flash', c=lambda v: convert(FLASH, v))
-            map_exif(file, metadata, 'fnumber',       f=lambda m,t: m.get_fnumber())
-            map_exif(file, metadata, 'focal_length',  f=lambda m,t: m.get_focal_length())
+            map_exif(file, metadata, 'fnumber', f=lambda m, t: m.get_fnumber())
+            map_exif(file, metadata, 'focal_length', f=lambda m, t: m.get_focal_length())
             map_exif(file, metadata, 'gain_control', 'Exif.Photo.GainControl', c=lambda v: convert(GAIN_CONTROL, v))
-            map_exif(file, metadata, 'gps_altitude',  f=lambda m,t: m.get_gps_altitude())
-            map_exif(file, metadata, 'gps_latitude',  f=lambda m,t: m.get_gps_latitude())
-            map_exif(file, metadata, 'gps_longitude', f=lambda m,t: m.get_gps_longitude())
-            map_exif(file, metadata, 'iso_speed',     f=lambda m,t: m.get_iso_speed())
+            map_exif(file, metadata, 'gps_altitude', f=lambda m, t: m.get_gps_altitude())
+            map_exif(file, metadata, 'gps_latitude', f=lambda m, t: m.get_gps_latitude())
+            map_exif(file, metadata, 'gps_longitude', f=lambda m, t: m.get_gps_longitude())
+            map_exif(file, metadata, 'iso_speed', f=lambda m, t: m.get_iso_speed())
             map_exif(file, metadata, 'light_source', 'Exif.Photo.LightSource', c=lambda v: convert(LIGHT_SOURCE, v))
             map_exif(file, metadata, 'max_aperture_value', 'Exif.Photo.MaxApertureValue')
             map_exif(file, metadata, 'metering_mode', 'Exif.Photo.MeteringMode', c=lambda v: convert(METERING_MODE, v))
             map_exif(file, metadata, 'model', 'Exif.Image.Model')
-            map_exif(file, metadata, 'orientation',   f=lambda m,t:m.get_orientation(), c=lambda v: convert(ORIENTATION, v))
-            map_exif(file, metadata, 'resolution_unit', 'Exif.Image.ResolutionUnit', c=lambda v: convert(RESOLUTION_UNIT, v))
+            map_exif(file, metadata, 'orientation', f=lambda m, t: m.get_orientation(),
+                c=lambda v: convert(ORIENTATION, v))
+            map_exif(file, metadata, 'resolution_unit', 'Exif.Image.ResolutionUnit',
+                c=lambda v: convert(RESOLUTION_UNIT, v))
             map_exif(file, metadata, 'shutter_speed_value', 'Exif.Photo.ShutterSpeedValue')
             map_exif(file, metadata, 'title', 'Exif.Image.ImageDescription')
             map_exif(file, metadata, 'usercomment', 'Exif.Photo.UserComment')
@@ -409,23 +410,21 @@ class ColumnExtension(GObject.GObject,
             map_exif(file, metadata, 'yresolution', 'Exif.Image.YResolution')
 
             try:
-                im = Image.open(filename)
-                map_any(file, im, 'width', f=lambda i: i.size[0])
-                map_any(file, im, 'height', f=lambda i: i.size[1])
+                with Image.open(filename) as im:
+                    map_any(file, im, 'width', f=lambda i: i.size[0])
+                    map_any(file, im, 'height', f=lambda i: i.size[1])
             except Exception:
                 pass
 
-        #######################
-        # video/flac handling #
-        #######################
-        if file.is_mime_type('video/x-msvideo') or\
-                file.is_mime_type('video/mpeg') or\
-                file.is_mime_type('video/x-ms-wmv') or\
-                file.is_mime_type('audio/x-ms-wma') or\
-                file.is_mime_type('video/mp4') or\
-                file.is_mime_type('audio/x-flac') or\
-                file.is_mime_type('video/x-flv') or\
-                file.is_mime_type('video/x-matroska') or\
+    def handle_video(self, file, filename):
+        if file.is_mime_type('video/x-msvideo') or \
+                file.is_mime_type('video/mpeg') or \
+                file.is_mime_type('video/x-ms-wmv') or \
+                file.is_mime_type('audio/x-ms-wma') or \
+                file.is_mime_type('video/mp4') or \
+                file.is_mime_type('audio/x-flac') or \
+                file.is_mime_type('video/x-flv') or \
+                file.is_mime_type('video/x-matroska') or \
                 file.is_mime_type('audio/x-wav'):
             try:
                 mediainfo = MediaInfo(filename)
@@ -441,18 +440,16 @@ class ColumnExtension(GObject.GObject,
             except Exception:
                 pass
 
-        ################
-        # pdf handling #
-        ################
+    def handle_pdf(self, file, filename):
         if file.is_mime_type('application/pdf'):
             try:
                 with open(filename, 'rb') as f:
                     pdf = PdfFileReader(f)
-                    map_any(file, pdf, 'pages', f=lambda i:i.getNumPages())
+                    map_any(file, pdf, 'pages', f=lambda i: i.getNumPages())
 
                     info = pdf.getDocumentInfo()
-                    map_any(file, info, 'title', f=lambda i:i.title)
-                    map_any(file, info, 'artist', f=lambda i:i.author)
+                    map_any(file, info, 'title', f=lambda i: i.title)
+                    map_any(file, info, 'artist', f=lambda i: i.author)
 
                     if pdf.getNumPages() > 0:
                         bbox = pdf.getPage(0).mediaBox
@@ -466,4 +463,5 @@ class ColumnExtension(GObject.GObject,
 
     def points_to_mm(self, pt):
         return int(float(pt) * math.sqrt(2.0) / 4.0)
+
 

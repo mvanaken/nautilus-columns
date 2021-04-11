@@ -23,6 +23,8 @@ class Test(unittest.TestCase):
         ['Json double quote', 'charset="Ascii" {"sharpness" : "0.123456789"}', '0.123456789'],
         ['Json two keys', 'charset="Ascii" {"key" : "value", "sharpness" : "0.123456789"}', '0.123456789'],
         ['Json single quote', 'charset="Ascii" {\'sharpness\' : 0.123456789}', ''],
+        ['Prefix Json', 'charset="Ascii" Prefix {"sharpness" : "0.123456789"}', ''],
+        ['Postfix Json', 'charset="Ascii" {"sharpness" : "0.123456789"} Postfix', ''],
         ['Other Json', 'charset="Ascii" {"key" : "value"}', 'not set'],
         ['Empty Json', 'charset="Ascii" {}', 'not set'],
     ])
@@ -78,6 +80,4 @@ class TestColumnExtension(unittest.TestCase):
         non_empty_actual = {k: v for k, v in fileinfo.actual.items() if v is not ''}
 
         # Extend the expected values with empty values for other keys.
-        expected = {**self.EMPTY_VALUES, **non_empty_expected}
-        actual = fileinfo.actual
-        self.assertEqual(actual, expected, msg=f"\nSummary:\nexpected: {non_empty_expected}\nactual  : {non_empty_actual}")
+        self.assertEqual(non_empty_actual, non_empty_expected, msg=f"\nSummary:\nexpected: {non_empty_expected}\nactual  : {non_empty_actual}")

@@ -5,24 +5,27 @@ You can add your own columns with information of your choice.
 1. Include a column within COLUMN_DEFINITIONS dict on top of the script.
     * Choose a name, label and description, all three are required.
     * Remember the name
-1. Determine the mime_type of the type of files, if it is a new one.
+1. Determine the mime_type of the type of files.
    ```bash
    mimetype <file>
    ```
-1. Start a new section with a nice header, e.g.
-    ```
-    ################
-    # pdf handling #
-    ################
-    ```
-1. Add an if-clause within `update_file_info` for the new `mime-type`, or continue with an existing one, e.g.
-    ```python
-    if file.is_mime_type('application/pdf'):
-    ```
-1. Always start a try-except for a new block, so when an exception occurs in this new part, it will not break the functionality of the rest.
-1. Prefer to use `with open(filename) as variablename:` when opening the file.
-1. Create a new object.
-1. Map values from the new object to `file` using one of the mapping methods. The most generic one is `map_any`
+   * If the mimetype is not new:
+        1. Look for the method that corresponds with your mimetype
+        2. See if you can reuse the object that is used already.
+        3. If not, then handle the mimetype as if it was new.
+   * If the mimetype is new:
+        1. Start a new function with an explanatory name, e.g.
+            ```python
+            def handle_pdf(self, file, filename):
+            ```
+        1. Start your new method with an `if`-clause for the new `mime-type`
+            ```python
+            if file.is_mime_type('application/pdf'):
+            ```
+        1. Then always include a try-except for a new block, so when an exception occurs in this new part, it will not break the functionality of the rest.
+        1. Prefer to use `with open(filename) as variablename:` when opening the file.
+        1. Create a new object to extract the new information from.
+1. Map values from the (new) object to `file` using one of the mapping methods. The most generic one is `map_any`
     ```python
     map_any(file, bbox, 'height', f=lambda b: self.points_from_bbox(b, 1), c=self.points_to_mm)
     ```
@@ -30,12 +33,13 @@ You can add your own columns with information of your choice.
 1. Include a test within `test_bsc_v2.py`
     * Add a file under test/resources
     * Extend the parameterized test with the new resource. e.g.
-        ```json
+        ```python
         ['audio-MP3', 'resources/gs-16b-2c-44100hz.mp3', 'audio/mpeg', {'title': 'Galway', 'artist': 'Kevin MacLeod'}],
         ```
         * The first parameter is just the test name, you can type there whatever you want.
         * The second is the relative path to the resource
         * The third is the mime-type of the file.
+        * The fourth is the expected result, excluding all empty values.
 1. Run the test.
 1. If all is green...profit!
 
