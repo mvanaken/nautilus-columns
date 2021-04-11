@@ -404,10 +404,8 @@ class ColumnExtension(GObject.GObject,
             map_exif(file, metadata, 'max_aperture_value', 'Exif.Photo.MaxApertureValue')
             map_exif(file, metadata, 'metering_mode', 'Exif.Photo.MeteringMode', c=lambda v: convert(METERING_MODE, v))
             map_exif(file, metadata, 'model', 'Exif.Image.Model')
-            map_exif(file, metadata, 'orientation', f=lambda m, t: m.get_orientation(),
-                c=lambda v: convert(ORIENTATION, v))
-            map_exif(file, metadata, 'resolution_unit', 'Exif.Image.ResolutionUnit',
-                c=lambda v: convert(RESOLUTION_UNIT, v))
+            map_exif(file, metadata, 'orientation', f=lambda m, t: m.get_orientation(), c=lambda v: convert(ORIENTATION, v))
+            map_exif(file, metadata, 'resolution_unit', 'Exif.Image.ResolutionUnit', c=lambda v: convert(RESOLUTION_UNIT, v))
             map_exif(file, metadata, 'shutter_speed_value', 'Exif.Photo.ShutterSpeedValue')
             map_exif(file, metadata, 'title', 'Exif.Image.ImageDescription')
             map_exif(file, metadata, 'usercomment', 'Exif.Photo.UserComment')
